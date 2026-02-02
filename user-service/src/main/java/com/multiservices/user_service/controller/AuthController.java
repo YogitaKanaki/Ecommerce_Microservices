@@ -19,7 +19,8 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody AuthDtos.RegisterReq req) {
         svc.register(req);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Register successful");
+
     }
 
     @PostMapping("/login")
