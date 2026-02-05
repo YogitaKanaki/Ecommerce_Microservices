@@ -31,6 +31,12 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	// REQUIRED for Resilience4j annotations
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
+
+	// Resilience4j (Spring Boot 3 compatible)
+	implementation 'io.github.resilience4j:resilience4j-spring-boot3:2.3.0'
+
 
 	//  JWT dependencies (ALL 3 are required)
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
@@ -41,6 +47,8 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
+
+
 
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }

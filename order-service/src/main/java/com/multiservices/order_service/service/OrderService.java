@@ -4,6 +4,9 @@ package com.multiservices.order_service.service;
 import com.multiservices.order_service.client.InventoryClient;
 import com.multiservices.order_service.model.Order;
 import com.multiservices.order_service.repo.OrderRepo;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +25,9 @@ public class OrderService {
     }
 
     @Transactional
+    @CircuitBreaker(name = "inventoryService", fallbackMethod = "fallbackInventory")
+    @Retry(name = "inventoryService")
+    @TimeLimiter(name = "inventoryService")
     public Order place(UUID userId, String bearerToken, UUID productId, int qty) {
         Order o = new Order();
         o.setUserId(userId);
