@@ -5,8 +5,10 @@ import com.multiservices.user_service.dto.AuthDtos;
 import com.multiservices.user_service.model.AppUser;
 import com.multiservices.user_service.repo.UserRepo;
 import com.multiservices.user_service.security.JwtUtil;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AuthService {
@@ -23,7 +25,7 @@ public class AuthService {
 
     public void register(AuthDtos.RegisterReq req) {
         if (repo.existsByEmail(req.email().toLowerCase())) {
-            throw new IllegalArgumentException("email already registered");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");
         }
         AppUser u = new AppUser();
         u.setEmail(req.email().toLowerCase());
@@ -33,15 +35,17 @@ public class AuthService {
     }
 
     public AuthDtos.TokenRes login(AuthDtos.LoginReq req) {
+
         var u = repo.findByEmail(req.email().toLowerCase())
-                .orElseThrow(() -> new IllegalArgumentException("invalid credentials"));
+                .orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email not registered"));
 
         if (!encoder.matches(req.password(), u.getPasswordHash())) {
-            throw new IllegalArgumentException("invalid credentials");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Incorrect password");
         }
 
         String token = jwt.generate(u.getId(), u.getEmail(), u.getRole());
         return new AuthDtos.TokenRes(token);
     }
-}
 
+}
