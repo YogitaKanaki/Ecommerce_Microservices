@@ -27,7 +27,6 @@ public class OrderService {
     @Transactional
     @CircuitBreaker(name = "inventoryService", fallbackMethod = "fallbackInventory")
     @Retry(name = "inventoryService")
-    @TimeLimiter(name = "inventoryService")
     public Order place(UUID userId, String bearerToken, UUID productId, int qty) {
         Order o = new Order();
         o.setUserId(userId);
