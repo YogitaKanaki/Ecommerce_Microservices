@@ -17,7 +17,7 @@ public class UserController {
         this.repo = repo;
     }
 
-    // ✅ Basic "me" endpoint (real-world)
+    // Basic "me" endpoint
     @GetMapping("/me")
     public Map<String, Object> me(Authentication auth) {
         UUID userId = UUID.fromString(auth.getPrincipal().toString());

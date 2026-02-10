@@ -9,14 +9,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 
-
-import jakarta.persistence.*;
-import org.hibernate.annotations.UuidGenerator;
-
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+
 
 @Entity
 @Table(name = "users", indexes = {
@@ -35,7 +30,7 @@ public class AppUser {
     @Column(nullable = false, length = 200)
     private String passwordHash;
 
-    // ✅ Real-world profile fields
+
     @Column(nullable = false, length = 100)
     private String firstName;
 
@@ -45,7 +40,7 @@ public class AppUser {
     @Column(length = 20)
     private String phone;
 
-    // ✅ Role-based access
+    // Role-based access
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private Role role = Role.USER;
@@ -59,7 +54,7 @@ public class AppUser {
     @Column(nullable = false)
     private Instant updatedAt = Instant.now();
 
-    // ✅ Multiple addresses
+    //  Multiple addresses
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Address> addresses = new ArrayList<>();
 

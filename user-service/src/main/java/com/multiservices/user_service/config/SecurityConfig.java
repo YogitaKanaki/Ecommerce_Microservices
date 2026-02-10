@@ -65,10 +65,10 @@ public class SecurityConfig {
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/error").permitAll()
 
-                // ✅ ADMIN only routes
+                // ADMIN only routes
                 .requestMatchers("/admin/**").hasRole("ADMIN")
 
-                // ✅ USER or ADMIN routes
+                // USER or ADMIN routes
                 .requestMatchers("/user/**").hasAnyRole("USER", "ADMIN")
 
                 .anyRequest().authenticated()

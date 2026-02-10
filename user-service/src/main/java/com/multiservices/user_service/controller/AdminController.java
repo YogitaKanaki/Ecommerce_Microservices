@@ -19,10 +19,5 @@ public class AdminController {
         return "ADMIN OK";
     }
 
-    // ✅ Promote a user to admin (ADMIN only because /admin/** is protected)
-    @PostMapping("/promote")
-    public ResponseEntity<?> promote(@RequestParam String email) {
-        authService.promoteToAdmin(email);
-        return ResponseEntity.ok("Promoted to ADMIN");
-    }
+
 }
