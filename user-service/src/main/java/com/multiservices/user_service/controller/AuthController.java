@@ -20,7 +20,6 @@ public class AuthController {
     public ResponseEntity<?> register(@Valid @RequestBody AuthDtos.RegisterReq req) {
         svc.register(req);
         return ResponseEntity.ok("Register successful");
-
     }
 
     @PostMapping("/login")
@@ -28,4 +27,3 @@ public class AuthController {
         return ResponseEntity.ok(svc.login(req));
     }
 }
-
