@@ -1,7 +1,5 @@
 package com.multiservices.inventory_service.model;
 
-
-
 import jakarta.persistence.*;
 import org.hibernate.annotations.UuidGenerator;
 
@@ -44,4 +42,3 @@ public class Product {
     public int getAvailableQty() { return availableQty; }
     public void setAvailableQty(int availableQty) { this.availableQty = availableQty; }
 }
-

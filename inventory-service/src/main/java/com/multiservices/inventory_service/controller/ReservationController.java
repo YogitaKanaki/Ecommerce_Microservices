@@ -1,8 +1,9 @@
 package com.multiservices.inventory_service.controller;
 
-
 import com.multiservices.inventory_service.dto.InventoryDtos;
+import com.multiservices.inventory_service.repo.StockReservationRepo;
 import com.multiservices.inventory_service.service.InventoryService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,24 +16,23 @@ import java.util.UUID;
 public class ReservationController {
 
     private final InventoryService svc;
+    private final StockReservationRepo reservationRepo;
 
-    public ReservationController(InventoryService svc) { this.svc = svc; }
-
-    @PostMapping("/reserve")
-    public ResponseEntity<?> reserve(@Valid @RequestBody InventoryDtos.ReserveReq req) {
-        var r = svc.reserve(req.orderId(), req.productId(), req.qty());
-        return ResponseEntity.ok(new InventoryDtos.ReserveRes(r.getId(), r.getStatus().name()));
+    public ReservationController(InventoryService svc, StockReservationRepo reservationRepo) {
+        this.svc = svc;
+        this.reservationRepo = reservationRepo;
     }
 
-    @PostMapping("/confirm/{orderId}")
-    public ResponseEntity<?> confirm(@PathVariable UUID orderId) {
-        var r = svc.confirm(orderId);
-        return ResponseEntity.ok(Map.of("status", r.getStatus().name()));
+
+    //  ADMIN ONLY (secured in SecurityConfig)
+    @GetMapping("/reservations")
+    public ResponseEntity<?> allReservations() {
+        return ResponseEntity.ok(reservationRepo.findAll());
     }
 
-    @PostMapping("/release/{orderId}")
-    public ResponseEntity<?> release(@PathVariable UUID orderId) {
-        var r = svc.release(orderId);
-        return ResponseEntity.ok(Map.of("status", r.getStatus().name()));
+    // ADMIN ONLY (secured in SecurityConfig)
+    @GetMapping("/reservations/by-user")
+    public ResponseEntity<?> byUser(@RequestParam String email) {
+        return ResponseEntity.ok(reservationRepo.findAllByUserEmail(email.toLowerCase()));
     }
 }

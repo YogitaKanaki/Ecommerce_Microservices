@@ -31,28 +31,20 @@ public class InventoryService {
     }
 
     @Transactional
-    public StockReservation reserve(UUID orderId, UUID productId, int qty) {
+    public StockReservation reserve(String userEmail, UUID orderId, UUID productId, int qty) {
 
         Product p = productRepo.findById(productId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Product not found"
-                ));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
         if (p.getAvailableQty() < qty) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Insufficient stock"
-            );
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient stock");
         }
 
         reservationRepo.findByOrderId(orderId).ifPresent(r -> {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
-                    "Reservation already exists for order"
-            );
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Reservation already exists for order");
         });
 
+        // reduce stock
         p.setAvailableQty(p.getAvailableQty() - qty);
 
         StockReservation r = new StockReservation();
@@ -61,28 +53,23 @@ public class InventoryService {
         r.setQty(qty);
         r.setStatus(StockReservation.Status.RESERVED);
 
+        //  store snapshots
+        r.setUserEmail(userEmail.toLowerCase());
+        r.setProductName(p.getName());
+
         productRepo.save(p);
         return reservationRepo.save(r);
     }
 
     @Transactional
     public StockReservation confirm(UUID orderId) {
-
         StockReservation r = reservationRepo.findByOrderId(orderId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Reservation not found"
-                ));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reservation not found"));
 
-        if (r.getStatus() == StockReservation.Status.CONFIRMED) {
-            return r;
-        }
+        if (r.getStatus() == StockReservation.Status.CONFIRMED) return r;
 
         if (r.getStatus() == StockReservation.Status.RELEASED) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Cannot confirm a released reservation"
-            );
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot confirm a released reservation");
         }
 
         r.setStatus(StockReservation.Status.CONFIRMED);
@@ -91,29 +78,17 @@ public class InventoryService {
 
     @Transactional
     public StockReservation release(UUID orderId) {
-
         StockReservation r = reservationRepo.findByOrderId(orderId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Reservation not found"
-                ));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Reservation not found"));
 
-        if (r.getStatus() == StockReservation.Status.RELEASED) {
-            return r;
-        }
+        if (r.getStatus() == StockReservation.Status.RELEASED) return r;
 
         if (r.getStatus() == StockReservation.Status.CONFIRMED) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Cannot release a confirmed reservation"
-            );
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot release a confirmed reservation");
         }
 
         Product p = productRepo.findById(r.getProductId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Product not found"
-                ));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
         p.setAvailableQty(p.getAvailableQty() + r.getQty());
         r.setStatus(StockReservation.Status.RELEASED);

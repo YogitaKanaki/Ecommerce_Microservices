@@ -1,7 +1,5 @@
 package com.multiservices.inventory_service.security;
 
-
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -49,6 +47,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             String userId = claims.getSubject();
             String role = (String) claims.get("role");
+            String email = claims.get("email", String.class);
+
+            //  available in controller
+            request.setAttribute("userEmail", email);
 
             var authToken = new UsernamePasswordAuthenticationToken(
                     userId, null, List.of(new SimpleGrantedAuthority("ROLE_" + role))
@@ -64,4 +66,3 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 }
-
