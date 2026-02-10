@@ -1,7 +1,7 @@
 package com.multiservices.order_service.controller;
 
-
 import com.multiservices.order_service.dto.OrderDtos;
+import com.multiservices.order_service.model.Order;
 import com.multiservices.order_service.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,9 @@ public class OrderController {
 
     private final OrderService svc;
 
-    public OrderController(OrderService svc) { this.svc = svc; }
+    public OrderController(OrderService svc) {
+        this.svc = svc;
+    }
 
     @PostMapping
     public ResponseEntity<OrderDtos.OrderRes> create(
@@ -25,14 +27,19 @@ public class OrderController {
             @RequestHeader("Authorization") String bearer
     ) {
         UUID userId = UUID.fromString((String) auth.getPrincipal());
-        var o = svc.place(userId, bearer, req.productId(), req.qty());
-        return ResponseEntity.ok(new OrderDtos.OrderRes(o.getId(), o.getProductId(), o.getQty(), o.getStatus().name()));
+        Order o = svc.place(userId, bearer, req.productId(), req.qty());
+        return ResponseEntity.ok(new OrderDtos.OrderRes(
+                o.getId(), o.getProductId(), o.getQty(), o.getStatus().name()
+        ));
     }
 
     @GetMapping("/me")
     public ResponseEntity<?> myOrders(Authentication auth) {
         UUID userId = UUID.fromString((String) auth.getPrincipal());
-        return ResponseEntity.ok(svc.myOrders(userId));
+        return ResponseEntity.ok(
+                svc.myOrders(userId).stream()
+                        .map(o -> new OrderDtos.OrderRes(o.getId(), o.getProductId(), o.getQty(), o.getStatus().name()))
+                        .toList()
+        );
     }
 }
-

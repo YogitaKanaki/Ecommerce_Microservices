@@ -1,7 +1,5 @@
 package com.multiservices.order_service.client;
 
-
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -22,6 +20,7 @@ public class InventoryClient {
 
     public void reserve(String bearerToken, UUID orderId, UUID productId, int qty) {
         String url = base + "/inventory/reserve";
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Authorization", bearerToken);
@@ -32,26 +31,36 @@ public class InventoryClient {
                 "qty", qty
         );
 
-        ResponseEntity<String> res = rt.exchange(url, HttpMethod.POST, new HttpEntity<>(body, headers), String.class);
+        ResponseEntity<String> res =
+                rt.exchange(url, HttpMethod.POST, new HttpEntity<>(body, headers), String.class);
+
         if (!res.getStatusCode().is2xxSuccessful()) {
-            throw new IllegalStateException("inventory reserve failed");
+            throw new IllegalStateException("inventory reserve failed: " + res.getStatusCode());
         }
     }
 
     public void confirm(String bearerToken, UUID orderId) {
         String url = base + "/inventory/confirm/" + orderId;
+
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", bearerToken);
-        ResponseEntity<String> res = rt.exchange(url, HttpMethod.POST, new HttpEntity<>(headers), String.class);
+
+        // ✅ body must be null, headers go in HttpEntity headers
+        ResponseEntity<String> res =
+                rt.exchange(url, HttpMethod.POST, new HttpEntity<>(null, headers), String.class);
+
         if (!res.getStatusCode().is2xxSuccessful()) {
-            throw new IllegalStateException("inventory confirm failed");
+            throw new IllegalStateException("inventory confirm failed: " + res.getStatusCode());
         }
     }
 
     public void release(String bearerToken, UUID orderId) {
         String url = base + "/inventory/release/" + orderId;
+
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", bearerToken);
-        rt.exchange(url, HttpMethod.POST, new HttpEntity<>(headers), String.class);
+
+        // ✅ body null
+        rt.exchange(url, HttpMethod.POST, new HttpEntity<>(null, headers), String.class);
     }
 }

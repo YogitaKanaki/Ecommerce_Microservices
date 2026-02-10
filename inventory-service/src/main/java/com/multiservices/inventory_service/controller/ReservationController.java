@@ -23,6 +23,30 @@ public class ReservationController {
         this.reservationRepo = reservationRepo;
     }
 
+    @PostMapping("/reserve")
+    public ResponseEntity<?> reserve(@Valid @RequestBody InventoryDtos.ReserveReq req,
+                                     HttpServletRequest request) {
+
+        String email = (String) request.getAttribute("userEmail");
+        if (email == null || email.isBlank()) {
+            return ResponseEntity.status(401).body("missing user email in token");
+        }
+
+        var r = svc.reserve(email, req.orderId(), req.productId(), req.qty());
+        return ResponseEntity.ok(new InventoryDtos.ReserveRes(r.getId(), r.getStatus().name()));
+    }
+
+    @PostMapping("/confirm/{orderId}")
+    public ResponseEntity<?> confirm(@PathVariable UUID orderId) {
+        var r = svc.confirm(orderId);
+        return ResponseEntity.ok(Map.of("status", r.getStatus().name()));
+    }
+
+    @PostMapping("/release/{orderId}")
+    public ResponseEntity<?> release(@PathVariable UUID orderId) {
+        var r = svc.release(orderId);
+        return ResponseEntity.ok(Map.of("status", r.getStatus().name()));
+    }
 
     //  ADMIN ONLY (secured in SecurityConfig)
     @GetMapping("/reservations")

@@ -1,12 +1,10 @@
 package com.multiservices.order_service.service;
 
-
 import com.multiservices.order_service.client.InventoryClient;
 import com.multiservices.order_service.model.Order;
 import com.multiservices.order_service.repo.OrderRepo;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
-import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,10 +22,12 @@ public class OrderService {
         this.inventory = inventory;
     }
 
-    @Transactional
-    @CircuitBreaker(name = "inventoryService", fallbackMethod = "fallbackInventory")
+
+    @CircuitBreaker(name = "inventoryService", fallbackMethod = "fallbackPlace")
     @Retry(name = "inventoryService")
+    @Transactional
     public Order place(UUID userId, String bearerToken, UUID productId, int qty) {
+
         Order o = new Order();
         o.setUserId(userId);
         o.setProductId(productId);
@@ -41,11 +41,23 @@ public class OrderService {
             inventory.confirm(bearerToken, o.getId());
             return o;
         } catch (Exception ex) {
-            // rollback inventory reservation
-            inventory.release(bearerToken, o.getId());
+
+            try {
+                inventory.release(bearerToken, o.getId());
+            } catch (Exception ignored) {}
+
             o.setStatus(Order.Status.CANCELLED);
             return repo.save(o);
         }
+    }
+    //  fallback signature
+    public Order fallbackPlace(UUID userId, String bearerToken, UUID productId, int qty, Throwable ex) {
+        Order o = new Order();
+        o.setUserId(userId);
+        o.setProductId(productId);
+        o.setQty(qty);
+        o.setStatus(Order.Status.CANCELLED);
+        return repo.save(o);
     }
 
     public List<Order> myOrders(UUID userId) {

@@ -1,6 +1,5 @@
 package com.multiservices.order_service.config;
 
-
 import com.multiservices.order_service.security.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,13 +13,14 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain chain(HttpSecurity http, JwtAuthFilter jwtAuthFilter) throws Exception {
         http.csrf(csrf -> csrf.disable());
+
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/orders/**").permitAll()
                 .requestMatchers("/error").permitAll()
+                .requestMatchers("/orders/**").authenticated() // ✅ require token
                 .anyRequest().authenticated()
         );
+
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
-
