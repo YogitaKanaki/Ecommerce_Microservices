@@ -49,7 +49,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String role = (String) claims.get("role");
             String email = claims.get("email", String.class);
 
-            //  available in controller
+            // available in controller
             request.setAttribute("userEmail", email);
 
             var authToken = new UsernamePasswordAuthenticationToken(
